@@ -72,7 +72,7 @@ $env:OPENAI_API_KEY = "sk-你的key"
 ### 4. 启动 Web UI
 
 ```bash
-cd 你的仓库名
+cd agent-framework
 python web_ui/main.py
 ```
 
