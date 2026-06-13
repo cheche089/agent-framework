@@ -1,0 +1,18 @@
+﻿# Agent 沙箱基础镜像
+# 构建: docker build -t agent-sandbox:latest -f Dockerfile .
+FROM python:3.11-slim
+
+# 安装常用工具
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    git \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# 创建非 root 用户
+RUN useradd -m -s /bin/bash agent
+USER agent
+WORKDIR /home/agent
+
+# 默认命令
+CMD ["/bin/bash"]

@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-framework"
+version = "0.1.0"
+description = "A modular AI Agent framework inspired by openclaw, codex, claude-code and hermes-agent"
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+include = ["agent_framework*"]
+
+dependencies = ["httpx>=0.27"]
+
+[project.optional-dependencies]
+test = ["pytest>=7.0"]
+dev = ["pytest>=7.0", "pytest-asyncio>=0.21"]

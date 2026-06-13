@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenAgent - AI 助手</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div id="app">
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div id="sidebar-header">
+      <h1 class="logo"><span class="logo-icon">&#9670;</span> OpenAgent</h1>
+      <button id="new-chat-btn" title="新建对话">+ 新建对话</button>
+    </div>
+    <div id="conversation-list"></div>
+    <div id="sidebar-footer">
+      <button id="settings-btn" title="设置">&#9881; 设置</button>
+    </div>
+  </aside>
+
+  <!-- Main Area -->
+  <main id="main">
+    <div id="chat-header">
+      <div id="model-selector">
+        <select id="provider-select"></select>
+        <select id="model-select"></select>
+      </div>
+      <div id="header-actions">
+        <button id="clear-chat-btn" title="清空对话">&#128465;</button>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div id="chat-messages">
+      <div class="welcome">
+        <div class="welcome-icon">&#9670;</div>
+        <h2>OpenAgent</h2>
+        <p>选择一个模型并开始对话。支持多厂商 LLM，流式输出。</p>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div id="input-area">
+      <div id="input-wrapper">
+        <textarea id="chat-input" rows="1" placeholder="输入消息... (Shift+Enter 换行, Enter 发送)"></textarea>
+        <button id="send-btn" disabled>&#10148;</button>
+      </div>
+      <p id="input-hint"></p>
+    </div>
+  </main>
+
+  <!-- Settings Panel -->
+  <div id="settings-overlay" class="hidden">
+    <div id="settings-panel">
+      <div id="settings-header">
+        <h2>&#9881; 设置</h2>
+        <button id="settings-close">&times;</button>
+      </div>
+      <div id="settings-body">
+        <section>
+          <h3>API 密钥</h3>
+          <p class="section-desc">配置各厂商的 API Key。配置后自动保存。</p>
+          <div id="api-keys-list"></div>
+        </section>
+        <section>
+          <h3>模型参数</h3>
+          <div class="setting-row">
+            <label>温度 (Temperature)</label>
+            <div class="range-group">
+              <input type="range" id="setting-temp" min="0" max="2" step="0.1" value="0.3">
+              <span id="setting-temp-val">0.3</span>
+            </div>
+          </div>
+          <div class="setting-row">
+            <label>最大 Token</label>
+            <input type="number" id="setting-max-tokens" value="4096" min="256" max="128000" step="256">
+          </div>
+        </section>
+        <section>
+          <h3>系统提示词</h3>
+          <textarea id="setting-system-prompt" rows="4" placeholder="可选的系统提示词"></textarea>
+        </section>
+        <section>
+          <h3>关于</h3>
+          <p class="section-desc">OpenAgent v0.1.0 | 基于 agent-framework 构建</p>
+        </section>
+      </div>
+      <div id="settings-footer">
+        <button id="settings-save" class="btn-primary">保存设置</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>
