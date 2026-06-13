@@ -16,6 +16,7 @@
     </div>
     <div id="conversation-list"></div>
     <div id="sidebar-footer">
+      <button id="tools-btn" title="工具和 Skill">&#9881; 工具/Skill</button>
       <button id="settings-btn" title="设置">&#9881; 设置</button>
     </div>
   </aside>
@@ -89,6 +90,41 @@
       </div>
       <div id="settings-footer">
         <button id="settings-save" class="btn-primary">保存设置</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tools & Skills Panel -->
+  <div id="tools-overlay" class="hidden">
+    <div id="tools-panel">
+      <div id="tools-header">
+        <div id="tools-tabs">
+          <button class="tools-tab active" data-tab="builtin">工具</button>
+          <button class="tools-tab" data-tab="skills">Skills</button>
+          <button class="tools-tab" data-tab="curated">安装</button>
+        </div>
+        <button id="tools-close">&times;</button>
+      </div>
+      <div id="tools-body">
+        <!-- Builtin Tools -->
+        <div id="tab-builtin" class="tools-tab-content active">
+          <div class="search-box">
+            <input type="text" id="web-search-input" placeholder="输入搜索关键词...">
+            <button id="web-search-btn">搜索</button>
+          </div>
+          <div id="web-search-results"></div>
+          <div id="tool-list"></div>
+        </div>
+        <!-- Installed Skills -->
+        <div id="tab-skills" class="tools-tab-content">
+          <p class="section-desc">已安装的 Skill。安装后可在对话中使用。</p>
+          <div id="installed-skills-list"></div>
+        </div>
+        <!-- Curated Skills -->
+        <div id="tab-curated" class="tools-tab-content">
+          <p class="section-desc">可安装的 Skill 列表。点击安装即可在对话中使用。</p>
+          <div id="curated-skills-list"></div>
+        </div>
       </div>
     </div>
   </div>

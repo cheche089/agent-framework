@@ -33,6 +33,9 @@ const App = {
       settingMaxTokens: document.getElementById('setting-max-tokens'),
       settingSystemPrompt: document.getElementById('setting-system-prompt'),
       apiKeysList: document.getElementById('api-keys-list'),
+      toolsBtn: document.getElementById('tools-btn'),
+      toolsOverlay: document.getElementById('tools-overlay'),
+      toolsClose: document.getElementById('tools-close'),
     };
 
     await this.loadProviders();
@@ -262,8 +265,36 @@ const App = {
 
     this.els.newChatBtn.addEventListener('click', () => this.createConversation());
 
+    this.els.toolsBtn.addEventListener('click', () => this.openTools());
     this.els.settingsBtn.addEventListener('click', () => this.openSettings());
     this.els.settingsClose.addEventListener('click', () => this.closeSettings());
+    this.els.toolsClose.addEventListener('click', () => this.closeTools());
+    this.els.toolsOverlay.addEventListener('click', (e) => {
+      if (e.target === this.els.toolsOverlay) this.closeTools();
+    });
+
+    // Tools tab switching
+    document.querySelectorAll('.tools-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tools-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tools-tab-content').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const target = document.getElementById('tab-' + tab.dataset.tab);
+        if (target) target.classList.add('active');
+      });
+    });
+
+    // Web search
+    document.getElementById('web-search-btn').addEventListener('click', () => {
+      const q = document.getElementById('web-search-input').value;
+      this.webSearch(q);
+    });
+    document.getElementById('web-search-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const q = document.getElementById('web-search-input').value;
+        this.webSearch(q);
+      }
+    });
     this.els.settingsOverlay.addEventListener('click', (e) => {
       if (e.target === this.els.settingsOverlay) this.closeSettings();
     });
@@ -290,7 +321,162 @@ const App = {
       }
     });
 
-    document.addEventListener('keydown', (e) => {
+    
+  // ---- Tools & Skills ----
+
+  async openTools() {
+    this.els.toolsOverlay.classList.remove('hidden');
+    await this.loadTools();
+    await this.loadSkills();
+    await this.loadCuratedSkills();
+  },
+
+  closeTools() {
+    this.els.toolsOverlay.classList.add('hidden');
+  },
+
+  async loadTools() {
+    const res = await fetch('/api/tools');
+    const tools = await res.json();
+    const list = document.getElementById('tool-list');
+    list.innerHTML = tools.map(t =>
+      '<div class="tool-item">' +
+        '<div class="tool-info">' +
+          '<div class="tool-name">' + t.name + '</div>' +
+          '<div class="tool-desc">' + t.description + '</div>' +
+        '</div>' +
+        '<span class="tool-cat">' + t.category + '</span>' +
+      '</div>'
+    ).join('');
+  },
+
+  async loadSkills() {
+    const res = await fetch('/api/skills');
+    const skills = await res.json();
+    const list = document.getElementById('installed-skills-list');
+    if (skills.length === 0) {
+      list.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">暂无已安装的 Skill。切换到"安装"页签添加。</p>';
+      return;
+    }
+    list.innerHTML = skills.map(s =>
+      '<div class="skill-card">' +
+        '<div class="skill-name">' + s.name + '<span class="skill-badge">' + (s.category || '通用') + '</span></div>' +
+        '<div class="skill-desc">' + s.description + '</div>' +
+        '<div class="skill-req">需要工具: ' +
+          (s.requires && s.requires.length
+            ? s.requires.map(r => '<span>' + r + '</span>').join(' ')
+            : '<span>无</span>') +
+        '</div>' +
+        '<div class="skill-actions">' +
+          '<button class="btn-uninstall" onclick="App.uninstallSkill(' + "'" + s.id + "'" + ')">卸载</button>' +
+        '</div>' +
+      '</div>'
+    ).join('');
+  },
+
+  async loadCuratedSkills() {
+    const res = await fetch('/api/skills/curated');
+    const skills = await res.json();
+    const installedRes = await fetch('/api/skills');
+    const installed = await installedRes.json();
+    const installedIds = installed.map(s => s.id);
+
+    const list = document.getElementById('curated-skills-list');
+    list.innerHTML = skills.map(s => {
+      const isInstalled = installedIds.includes(s.id);
+      return '<div class="skill-card">' +
+        '<div class="skill-name">' + s.name + '<span class="skill-badge">' + (s.category || '通用') + '</span></div>' +
+        '<div class="skill-desc">' + s.description + '</div>' +
+        '<div class="skill-req">需要工具: ' +
+          (s.requires && s.requires.length
+            ? s.requires.map(r => '<span>' + r + '</span>').join(' ')
+            : '<span>无</span>') +
+        '</div>' +
+        '<div class="skill-actions">' +
+          (isInstalled
+            ? '<button class="btn-uninstall" onclick="App.uninstallSkill(' + "'" + s.id + "'" + ')">已安装 - 卸载</button>'
+            : '<button class="btn-install" onclick="App.installSkill(' + "'" + s.id + "'" + ')">安装</button>'
+          ) +
+        '</div>' +
+      '</div>';
+    }).join('');
+  },
+
+  async installSkill(skillId) {
+    const btn = document.querySelector('#curated-skills-list .btn-install');
+    const res = await fetch('/api/skills/install', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ skill_id: skillId }),
+    });
+    const data = await res.json();
+    if (data.status === 'ok') {
+      this.showToast('Skill "' + data.skill.name + '" 安装成功!');
+      await this.loadCuratedSkills();
+      await this.loadSkills();
+    } else {
+      this.showToast('安装失败: ' + (data.detail || '未知错误'), 'error');
+    }
+  },
+
+  async uninstallSkill(skillId) {
+    const res = await fetch('/api/skills/uninstall/' + skillId, { method: 'POST' });
+    const data = await res.json();
+    if (data.status === 'ok') {
+      this.showToast('Skill 已卸载');
+      await this.loadCuratedSkills();
+      await this.loadSkills();
+    }
+  },
+
+  async webSearch(query) {
+    if (!query.trim()) return;
+    const btn = document.getElementById('web-search-btn');
+    const resultsDiv = document.getElementById('web-search-results');
+    btn.disabled = true;
+    btn.textContent = '搜索中...';
+    resultsDiv.innerHTML = '<p style="color:var(--text-muted);">搜索中...</p>';
+
+    try {
+      const res = await fetch('/api/web/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: query, num_results: 5 }),
+      });
+      const data = await res.json();
+
+      if (data.results && data.results.length > 0) {
+        resultsDiv.innerHTML = data.results.map(r =>
+          '<div class="search-result">' +
+            '<div class="sr-title" onclick="window.open(' + "'" + r.url + "'" + ','_blank')">' + this.escapeHtml(r.title) + '</div>' +
+            '<div class="sr-url">' + this.escapeHtml(r.url) + '</div>' +
+            '<div class="sr-snippet">' + this.escapeHtml(r.snippet) + '</div>' +
+          '</div>'
+        ).join('');
+      } else {
+        resultsDiv.innerHTML = '<p style="color:var(--text-muted);">未找到结果。</p>';
+      }
+    } catch (e) {
+      resultsDiv.innerHTML = '<p style="color:var(--danger);">搜索失败: ' + e.message + '</p>';
+    }
+
+    btn.disabled = false;
+    btn.textContent = '\u641c\u7d22';
+  },
+
+  showToast(msg, type) {
+    // Simple toast notification
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = msg;
+    toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);padding:10px 24px;border-radius:8px;font-size:13px;z-index:200;animation:slideUp 0.3s ease;background:' + (type === 'error' ? 'var(--danger)' : 'var(--accent)') + ';color:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 3000);
+  },
+
+document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         if (!this.els.settingsOverlay.classList.contains('hidden')) {
           this.closeSettings();

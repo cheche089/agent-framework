@@ -51,6 +51,24 @@ PROVIDERS = {
     "doubao": {"name": "豆包", "base_url": "https://ark.cn-beijing.volces.com/api/v3", "models": ["doubao-pro-32k","doubao-pro-128k","doubao-lite-32k"], "env_key": "DOUBAO_API_KEY", "api_type": "openai"},
 }
 
+
+# === Web Search ===
+async def web_search(query: str, num_results: int = 5) -> list:
+    """Search the web using DuckDuckGo HTML API (no API key needed)."""
+    results = []
+    try:
+        url = f"https://html.duckduckgo.com/html/?q={quote_plus(query)}"
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
+            resp = await client.get(url, headers=headers)
+            html = resp.text
+            blocks = re.findall(r'<a rel="nofollow" class="result__a" href="(.*?)">.*?</a>.*?<a class="result__snippet" href=".*?">(.*?)</a>', html, re.DOTALL)
+            for href, snippet in blocks[:num_results]:
+                snippet_clean = re.sub(r'<.*?>', '', snippet).strip()
+                results.append({'title': href[:60], 'url': href, 'snippet': snippet_clean})
+    except Exception as e:
+        results.append({'error': str(e)})
+    return results
 @app.get("/api/providers")
 def get_providers():
     return [{"id": pid, "name": p["name"], "models": p["models"], "env_key": p["env_key"]} for pid, p in PROVIDERS.items()]
@@ -174,6 +192,92 @@ async def ws_chat(ws: WebSocket):
 
 static_dir = Path(__file__).parent / "static"
 app.mount("/", StaticFiles(directory=str(static_dir), html=True), name="static")
+
+
+
+# === Tools & Skills API ===
+
+@app.get("/api/tools")
+def get_tools():
+    """List available built-in tools."""
+    return [
+        {"id": "web_search", "name": "\u7f51\u9875\u641c\u7d22", "description": "\u641c\u7d22\u4e92\u8054\u7f51\u83b7\u53d6\u5b9e\u65f6\u4fe1\u606f", "category": "search"},
+        {"id": "shell", "name": "Shell\u547d\u4ee4", "description": "\u6267\u884c\u7cfb\u7edf\u547d\u4ee4", "category": "system"},
+        {"id": "read_file", "name": "\u8bfb\u53d6\u6587\u4ef6", "description": "\u8bfb\u53d6\u6587\u4ef6\u5185\u5bb9", "category": "file"},
+        {"id": "write_file", "name": "\u5199\u5165\u6587\u4ef6", "description": "\u5199\u5165\u6587\u4ef6\u5185\u5bb9", "category": "file"},
+    ]
+
+@app.post("/api/web/search")
+async def api_web_search(req: dict):
+    query = req.get("query", "")
+    num = min(req.get("num_results", 5), 10)
+    results = await web_search(query, num)
+    return {"results": results}
+
+@app.get("/api/skills/curated")
+def get_curated_skills():
+    """List curated skills available for installation."""
+    return [{"id": k, **v} for k, v in CURATED_SKILLS.items()]
+
+@app.get("/api/skills")
+def get_skills():
+    """List installed skills."""
+    return get_installed_skills()
+
+@app.post("/api/skills/install")
+async def install_skill(req: dict):
+    """Install a skill from the curated list."""
+    skill_id = req.get("skill_id", "")
+    if skill_id not in CURATED_SKILLS:
+        raise HTTPException(400, f"Unknown skill: {skill_id}")
+    skill = CURATED_SKILLS[skill_id]
+    installed = {
+        "id": skill_id,
+        "name": skill["name"],
+        "description": skill["description"],
+        "instructions": skill["instructions"],
+        "requires": skill.get("requires", []),
+        "category": skill.get("category", ""),
+        "installed_at": datetime.now().isoformat(),
+    }
+    save_installed_skill(installed)
+    return {"status": "ok", "skill": installed}
+
+@app.post("/api/skills/uninstall/{skill_id}")
+def uninstall_skill(skill_id: str):
+    """Uninstall a skill."""
+    remove_installed_skill(skill_id)
+    return {"status": "ok"}
+
+@app.post("/api/skills/execute")
+async def execute_skill(req: dict):
+    """Execute a skill - returns instructions for the LLM."""
+    skill_id = req.get("skill_id", "")
+    params = req.get("params", {})
+    skills = get_installed_skills()
+    skill = None
+    for s in skills:
+        if s["id"] == skill_id:
+            skill = s
+            break
+    if not skill:
+        raise HTTPException(404, f"Skill '{skill_id}' not installed")
+
+    query = req.get("query", "")
+    instructions = skill.get("instructions", "")
+
+    # Replace placeholders
+    for k, v in params.items():
+        instructions = instructions.replace("{{" + k + "}}", str(v))
+        instructions = instructions.replace("${" + k + "}", str(v))
+
+    return {
+        "type": "skill_execute",
+        "skill_id": skill_id,
+        "skill_name": skill["name"],
+        "instructions": instructions,
+        "user_query": query,
+    }
 
 if __name__ == "__main__":
     import uvicorn
