@@ -69,6 +69,60 @@ async def web_search(query: str, num_results: int = 5) -> list:
     except Exception as e:
         results.append({'error': str(e)})
     return results
+
+
+# === Curated Skills Definitions ===
+CURATED_SKILLS = {
+    "web_search": {
+        "name": "\u8054\u7f51\u641c\u7d22",
+        "description": "\u641c\u7d22\u4e92\u8054\u7f51\u83b7\u53d6\u5b9e\u65f6\u4fe1\u606f\uff0c\u652f\u6301\u641c\u7d22\u7f51\u9875\u3001\u65b0\u95fb\u7b49",
+        "instructions": "\u4f60\u662f\u4e00\u4e2a\u641c\u7d22\u52a9\u624b\u3002\u7528\u6237\u4f1a\u7ed9\u4f60\u4e00\u4e2a\u95ee\u9898\uff0c\u8bf7\u4f7f\u7528 web_search \u5de5\u5177\u641c\u7d22\u4e92\u8054\u7f51\uff0c\u7136\u540e\u7ed9\u51fa\u5b8c\u6574\u7684\u56de\u7b54\u3002",
+        "requires": ["web_search"],
+        "category": "search",
+    },
+    "code_review": {
+        "name": "\u4ee3\u7801\u5ba1\u67e5",
+        "description": "\u5bf9 Python \u4ee3\u7801\u8fdb\u884c\u5ba1\u67e5\uff0c\u68c0\u67e5\u5e38\u89c1\u7684\u4ee3\u7801\u8d28\u91cf\u95ee\u9898",
+        "instructions": "\u4f60\u662f\u4e00\u4e2a\u4ee3\u7801\u5ba1\u67e5\u52a9\u624b\u3002\u8bf7\u5ba1\u67e5\u7528\u6237\u63d0\u4f9b\u7684\u4ee3\u7801\uff0c\u68c0\u67e5\u7c7b\u578b\u6ce8\u91ca\u3001\u672a\u4f7f\u7528\u7684\u5bfc\u5165\u3001\u8d85\u957f\u51fd\u6570\u3001\u5f02\u5e38\u5904\u7406\u548c\u5b89\u5168\u6f0f\u6d1e\uff0c\u7ed9\u51fa\u6539\u8fdb\u5efa\u8bae\u3002",
+        "requires": ["read_file"],
+        "category": "development",
+    },
+    "summarize": {
+        "name": "\u5185\u5bb9\u603b\u7ed3",
+        "description": "\u5bf9\u6587\u672c\u3001\u7f51\u9875\u6216\u6587\u4ef6\u5185\u5bb9\u8fdb\u884c\u667a\u80fd\u603b\u7ed3\u548c\u63d0\u70bc",
+        "instructions": "\u4f60\u662f\u4e00\u4e2a\u603b\u7ed3\u52a9\u624b\u3002\u8bf7\u5bf9\u7528\u6237\u63d0\u4f9b\u7684\u5185\u5bb9\u8fdb\u884c\u603b\u7ed3\uff1a\u63d0\u53d6\u5173\u952e\u4fe1\u606f\u3001\u4fdd\u7559\u91cd\u8981\u6570\u636e\u3001\u8f93\u51fa\u7ed3\u6784\u5316\u603b\u7ed3\u3001\u63d0\u70bc 3-5 \u4e2a\u8981\u70b9\u3002",
+        "requires": [],
+        "category": "productivity",
+    },
+    "file_organizer": {
+        "name": "\u6587\u4ef6\u6574\u7406",
+        "description": "\u81ea\u52a8\u5206\u7c7b\u3001\u547d\u540d\u548c\u7ec4\u7ec7\u6587\u4ef6\u5939\u4e2d\u7684\u6587\u4ef6",
+        "instructions": "\u4f60\u662f\u4e00\u4e2a\u6587\u4ef6\u6574\u7406\u52a9\u624b\u3002\u5e2e\u52a9\u7528\u6237\u6574\u7406\u76ee\u6807\u76ee\u5f55\u4e0b\u7684\u6587\u4ef6\uff1a\u6309\u6269\u5c55\u540d\u5206\u7c7b\u3001\u521b\u5efa\u6587\u4ef6\u5939\u3001\u79fb\u52a8\u6587\u4ef6\u3002\u786e\u8ba4\u540e\u6267\u884c\u3002",
+        "requires": ["shell"],
+        "category": "productivity",
+    },
+}
+
+SKILLS_DIR = CONFIG_DIR / "skills"
+SKILLS_DIR.mkdir(exist_ok=True)
+
+def get_installed_skills():
+    skills = []
+    for f in sorted(SKILLS_DIR.glob("*.json")):
+        try:
+            skills.append(json.loads(f.read_text("utf-8")))
+        except:
+            pass
+    return skills
+
+def save_installed_skill(skill: dict):
+    (SKILLS_DIR / f"{skill['id']}.json").write_text(json.dumps(skill, indent=2, ensure_ascii=False), "utf-8")
+
+def remove_installed_skill(skill_id: str):
+    p = SKILLS_DIR / f"{skill_id}.json"
+    if p.exists(): p.unlink()
+
+
 @app.get("/api/providers")
 def get_providers():
     return [{"id": pid, "name": p["name"], "models": p["models"], "env_key": p["env_key"]} for pid, p in PROVIDERS.items()]
