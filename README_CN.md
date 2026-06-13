@@ -35,8 +35,8 @@
 ### 2. 安装
 
 ```bash
-git clone https://github.com/你的用户名/你的仓库名.git
-cd 你的仓库名
+git clone https://github.com/cheche089/agent-framework.git
+cd agent-framework
 
 # 安装依赖
 pip install httpx fastapi uvicorn websockets
