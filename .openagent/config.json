@@ -1,8 +1,0 @@
-{
-  "api_keys": {},
-  "provider": "openai",
-  "model": "deepseek-chat",
-  "temperature": 0.3,
-  "max_tokens": 4096,
-  "system_prompt": ""
-}

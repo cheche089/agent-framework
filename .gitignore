@@ -8,3 +8,6 @@ build/
 ".env"
 .venv/
 venv/
+
+# Local config (API keys, conversations)
+.openagent/
