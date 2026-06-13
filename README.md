@@ -6,6 +6,12 @@
 
 **OpenAgent** is a modular AI Agent framework with an intuitive Web UI, supporting 10+ LLM providers. It features built-in tools, a skill management system, web search, and a desktop-grade user interface — all in a single Python application.
 
+Supports both command-line and web-based interaction. Two different launch methods are available below.
+
+This is a basic agent framework with almost no built-in skills. You can download and configure your own skills as needed.
+
+Locally deployed AI agent.
+
 ---
 
 ## Features
@@ -35,8 +41,8 @@
 ### 2. Install
 
 ```bash
-git clone https://github.com/your-username/your-repo.git
-cd your-repo
+git clone https://github.com/cheche089/agent-framework.git
+cd agent-framework
 
 # Install dependencies
 pip install httpx fastapi uvicorn websockets
@@ -69,7 +75,7 @@ $env:DEEPSEEK_API_KEY = "sk-xxx"
 ### 4. Start Web UI
 
 ```bash
-cd your-repo
+cd agent-framework
 python web_ui/main.py
 ```
 
