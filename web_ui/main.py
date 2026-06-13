@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 app = FastAPI(title="OpenAgent Web UI")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
-CONFIG_DIR = Path(os.environ.get("APPDATA", Path.home() / ".openagent")) / "OpenAgent"
+CONFIG_DIR = Path(__file__).parent.parent / ".openagent"
 if not CONFIG_DIR.exists():
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 CONFIG_FILE = CONFIG_DIR / "config.json"
