@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agent-framework"
-version = "0.1.0"
-description = "A modular AI Agent framework inspired by openclaw, codex, claude-code and hermes-agent"
+version = "0.2.0"
+description = "OpenAgent - A production-ready AI Agent framework with web search, skill marketplace, multi-LLM support, and Web UI"
 requires-python = ">=3.10"
 
 [tool.setuptools.packages.find]
@@ -14,5 +14,5 @@ include = ["agent_framework*"]
 dependencies = ["httpx>=0.27"]
 
 [project.optional-dependencies]
-test = ["pytest>=7.0"]
 dev = ["pytest>=7.0", "pytest-asyncio>=0.21"]
+web = ["fastapi>=0.104", "uvicorn>=0.24", "websockets>=12.0"]

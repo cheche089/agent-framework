@@ -4,13 +4,13 @@ echo ========================================
 echo   OpenAgent Web UI
 echo ========================================
 echo.
-echo 1. ÉèÖÃÄãµÄ API Key£¨Ñ¡Ò»¸ö£©:
+echo 1. è®¾ç½® API Keyï¼ˆé€‰ä¸€ä¸ªå³å¯ï¼‰:
 echo    set DEEPSEEK_API_KEY=sk-your-key
 echo    set OPENAI_API_KEY=sk-your-key
 echo.
-echo 2. Æô¶¯ºóä¯ÀÀÆ÷·ÃÎÊ http://127.0.0.1:8080
+echo 2. å¯åŠ¨åŽè®¿é—® http://127.0.0.1:8080
 echo.
-echo °´ÈÎÒâ¼üÆô¶¯...
+echo æ­£åœ¨å¯åŠ¨...
 pause >nul
 
 cd /d "%~dp0"
