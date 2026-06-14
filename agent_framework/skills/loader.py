@@ -81,4 +81,5 @@ class MarkdownSkillLoader(SkillLoader):
             description=description,
             instructions=instructions,
             metadata={"source": source, "format": "markdown"},
-        )
+        )
+

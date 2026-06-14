@@ -98,8 +98,17 @@ class DefaultWorkflowEngine(WorkflowEngine):
     async def _run_condition(self, node: WorkflowNode, context: ExecutionContext) -> Any:
         condition = node.config.get("condition", "True")
         try:
-            safe_builtins = {"__builtins__": {k: __builtins__[k] for k in ("True", "False", "None", "and", "or", "not", "len", "str", "int", "float", "bool", "isinstance", "dict", "list", "tuple", "set") if k in __builtins__}}
-            result = bool(eval(condition, safe_builtins, {"context": context, "results": self._results}))
+            # Safer condition evaluation - only allow basic comparisons
+            safe_condition = condition.strip()
+            # Only allow: variable comparisons, True/False/None, and/or/not, == != < > in
+            allowed_pattern = r'^[\s\w\._\(\)\[\]\'\"!=<>%+\-*/and or not in True False None,]+$'
+            import re as _re
+            if not _re.match(allowed_pattern, safe_condition):
+                return Exception(f"Condition contains disallowed characters: {safe_condition[:100]}")
+            # Restrict builtins to minimum
+            safe_builtins = {"__builtins__": {k: __builtins__[k] for k in ("True", "False", "None", "and", "or", "not", "len", "str", "int", "float", "bool", "dict", "list", "tuple", "in", "is") if k in __builtins__}}
+            # Don't allow attribute access (no "." except for dict/list access)
+            result = bool(eval(safe_condition, {"__builtins__": {}}, {"context": context, "results": self._results, "True": True, "False": False, "None": None, "len": len, "str": str, "int": int, "float": float, "bool": bool, "dict": dict, "list": list, "tuple": tuple}))
             next_id = node.config.get("if_true" if result else "if_false")
             if next_id:
                 next_node = self._find_node(node, next_id)

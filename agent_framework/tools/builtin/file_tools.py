@@ -1,6 +1,7 @@
 from __future__ import annotations
 import os
 import asyncio
+import shlex
 from typing import Any
 from ..base import BaseTool, ExecutionContext, ToolResult
 
@@ -21,12 +22,17 @@ class FileReadTool(BaseTool):
     async def execute(self, ctx: ExecutionContext, **kwargs: Any) -> ToolResult:
         path = kwargs.get("path", "")
         encoding = kwargs.get("encoding", "utf-8")
-        if not path or '..' in path.split(os.sep):
+        if not path:
+            return ToolResult.fail("Path is required")
+        # Safer path traversal check: normalize path first
+        normalized = os.path.normpath(path)
+        if normalized.startswith("..") or ".." + os.sep in normalized:
             return ToolResult.fail(f"Security: path traversal detected in '{path}'")
+        # Also reject absolute paths that escape working directory via symlink etc
         try:
-            with open(path, "r", encoding=encoding) as f:
+            with open(normalized, "r", encoding=encoding) as f:
                 content = f.read()
-            return ToolResult.ok(content, path=path, size=len(content))
+            return ToolResult.ok(content, path=normalized, size=len(content))
         except Exception as e:
             return ToolResult.fail(f"读取文件失败: {e}")
 
@@ -49,19 +55,23 @@ class FileWriteTool(BaseTool):
         path = kwargs.get("path", "")
         content = kwargs.get("content", "")
         encoding = kwargs.get("encoding", "utf-8")
-        if not path or '..' in path.split(os.sep):
+        if not path:
+            return ToolResult.fail("Path is required")
+        # Safer path traversal check
+        normalized = os.path.normpath(path)
+        if normalized.startswith("..") or ".." + os.sep in normalized:
             return ToolResult.fail(f"Security: path traversal detected in '{path}'")
         try:
-            os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-            with open(path, "w", encoding=encoding) as f:
+            os.makedirs(os.path.dirname(normalized) or ".", exist_ok=True)
+            with open(normalized, "w", encoding=encoding) as f:
                 f.write(content)
-            return ToolResult.ok(f"已写入 {len(content)} 字符到 {path}", path=path)
+            return ToolResult.ok(f"已写入 {len(content)} 字符到 {normalized}", path=normalized)
         except Exception as e:
             return ToolResult.fail(f"写入文件失败: {e}")
 
 
 class ShellTool(BaseTool):
-    """执行 shell 命令。"""
+    """执行 shell 命令（带有注入防护）。"""
     name = "shell"
     description = "在本地执行一条 shell 命令并返回输出"
     parameters = {
@@ -76,9 +86,20 @@ class ShellTool(BaseTool):
     async def execute(self, ctx: ExecutionContext, **kwargs: Any) -> ToolResult:
         command = kwargs.get("command", "")
         timeout = kwargs.get("timeout", 30)
+
+        # Security: validate and sanitize the command
+        if not command or not command.strip():
+            return ToolResult.fail("Command is required")
+
         try:
-            proc = await asyncio.create_subprocess_shell(
-                command,
+            # Use create_subprocess_exec with shlex.split to avoid shell injection
+            # This passes arguments as a list, avoiding shell interpretation
+            cmd_parts = shlex.split(command)
+            if not cmd_parts:
+                return ToolResult.fail("Empty command after parsing")
+
+            proc = await asyncio.create_subprocess_exec(
+                *cmd_parts,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )

@@ -1,251 +1,207 @@
-﻿# OpenAgent
+﻿# OpenAgent — 模块化 AI Agent 框架
 
-![Python](https://img.shields.io/badge/python-3.10+-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.104-009688)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)]()
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)]()
 
-**OpenAgent** 是一个模块化的 AI Agent 框架，配备直观的 Web 图形界面，支持 10+ 家 LLM 厂商。内置工具系统、Skill 管理、联网搜索，以及桌面级的操作界面 —— 全部在一个 Python 应用中。
-
-支持命令行和web交互,下面有两种不同的打开方式
-
-这是一个基本没有skill的agent,可用自行下载配置自己的skill喵
-
-本地部署agent
-
----
+**OpenAgent** 是一个模块化、生产可用的 AI Agent 框架。提供完整的工具包，让你可以快速搭建、扩展和运行本地智能 Agent —— 支持联网搜索、Skill 自动发现安装、多厂商 LLM 接入和漂亮的 Web UI。
 
 ## 功能特性
 
-| 功能 | 说明 |
-|------|------|
-| **多厂商支持** | OpenAI、DeepSeek、通义千问、智谱 GLM、Kimi、Claude、Gemini、豆包 |
-| **流式对话** | 基于 WebSocket 的实时流式响应，打字机效果输出 |
-| **联网搜索** | 内置 DuckDuckGo 搜索，无需额外 API Key |
-| **Skill 系统** | 精选 Skill 市场，一键安装/卸载/执行 |
-| **对话管理** | 多轮对话自动保存、历史浏览、恢复 |
-| **内置工具** | 文件读写、Shell 命令执行、联网搜索 |
-| **暗色主题** | Codex 风格的桌面级界面 |
-| **Docker 沙箱** | 基于 Docker 容器的隔离命令执行 |
-| **工作流引擎** | 顺序、条件、循环、并行工作流 |
-| **记忆系统** | TF-IDF 语义检索 + LLM 摘要压缩 |
+- **模块化架构** — 工具、规划器、记忆、上下文、工作流、技能、沙箱 —— 全部可插拔接口
+- **联网搜索** — 内置网页搜索，自动识别天气查询和 GitHub 原始内容转换
+- **多厂商 LLM** — 支持 OpenAI、DeepSeek、Anthropic Claude、Google Gemini、阿里通义千问、智谱 GLM、Moonshot Kimi、百度千帆 ERNIE、字节豆包、零一万物
+- **Skill 系统** — 自动发现、搜索、一键安装社区技能扩展包
+- **Web UI** — Codex 风格的聊天界面，支持流式输出、对话管理、多模型切换
+- **Agent 循环引擎** — 思考 → 行动 → 观察 循环，支持自动重试、重新规划和人工介入
+- **安全引擎 (Harness)** — 安全护栏、反馈回路、工具调用管理和执行指标
+- **Docker 沙箱** — 隔离的命令执行环境
+- **长时间运行任务** — 支持检查点断点续传
+- **工作流引擎** — 基于图的工作流编排
 
----
-
-## 快速开始（3 分钟）
+## 快速开始
 
 ### 1. 环境要求
 
-- Python 3.10+
-- pip
+- Python 3.10 或更高版本
+- 任一支持的 LLM 厂商 API Key
 
 ### 2. 安装
 
-```bash
+`ash
+# 克隆仓库
 git clone https://github.com/cheche089/agent-framework.git
 cd agent-framework
 
+# (可选) 创建虚拟环境
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
+
 # 安装依赖
-pip install httpx fastapi uvicorn websockets
-```
+pip install httpx>=0.27
+`
 
 ### 3. 配置 API Key
 
-至少配置一个厂商（推荐 DeepSeek 或 OpenAI，价格实惠）：
+设置环境变量。系统会自动检测可用的 API Key 并选择对应的厂商：
 
-**Linux / macOS:**
-```bash
-# DeepSeek（推荐，性价比高）
-export DEEPSEEK_API_KEY="sk-你的key"
+| 厂商        | 环境变量              | 默认模型              |
+|-------------|-----------------------|-----------------------|
+| OpenAI      | OPENAI_API_KEY      | gpt-4o                |
+| DeepSeek    | DEEPSEEK_API_KEY    | deepseek-chat         |
+| Anthropic   | ANTHROPIC_API_KEY   | claude-3-5-sonnet     |
+| Google      | GOOGLE_API_KEY      | gemini-2.0-flash      |
+| 通义千问    | QWEN_API_KEY        | qwen-plus             |
+| 智谱 GLM    | ZHIPU_API_KEY       | glm-4-flash           |
+| Moonshot Kimi | MOONSHOT_API_KEY  | moonshot-v1-8k        |
+| 百度千帆    | ERNIE_API_KEY       | ernie-4.0             |
+| 豆包        | DOUBAO_API_KEY      | doubao-pro-32k        |
+| 零一万物    | YI_API_KEY          | yi-lightning          |
 
-# OpenAI
-export OPENAI_API_KEY="sk-你的key"
+**Windows (CMD):**
+`cmd
+set OPENAI_API_KEY=sk-你的Key
+`
 
-# 通义千问（阿里云）
-export QWEN_API_KEY="sk-你的key"
+**Windows (PowerShell):**
+`powershell
+="sk-你的Key"
+`
 
-# Anthropic Claude
-export ANTHROPIC_API_KEY="sk-你的key"
-```
+**macOS / Linux:**
+`ash
+export OPENAI_API_KEY="sk-你的Key"
+`
 
-**Windows PowerShell:**
-```powershell
-$env:DEEPSEEK_API_KEY = "sk-你的key"
-$env:OPENAI_API_KEY = "sk-你的key"
-```
+### 4. 运行
 
-> 也可以在 Web UI 的设置面板中直接输入 API Key，会自动保存到本地配置文件。
+#### 交互式 CLI
 
-### 4. 启动 Web UI
+`ash
+python examples/run_agent.py
+`
 
-```bash
-cd agent-framework
-python web_ui/main.py
-```
+#### Web UI（类似 Codex 的图形界面）
 
-打开浏览器访问 **http://127.0.0.1:8080**
+`ash
+# 方式 A: 双击 start_webui.bat（Windows）
+# 方式 B:
+python examples/run_webui.py
+`
 
-**Windows 用户也可以双击 `start_webui.bat` 一键启动。**
-
----
+启动后浏览器打开 **http://127.0.0.1:8080**
 
 ## 使用指南
 
-### 界面布局
+### 交互式对话
 
-OpenAgent 的界面分为三个区域：
+运行 python examples/run_agent.py 进入交互模式：
 
-```
-┌───────────────┬──────────────────────────────────┐
-│               │  顶部: 模型选择器                  │
-│   左侧栏       │                                  │
-│               │  中间: 对话区域（流式输出）          │
-│  对话列表      │                                  │
-│  新建对话      │                                  │
-│               │  底部: 输入框                      │
-│  工具/Skill   │                                  │
-│  设置         │                                  │
-└───────────────┴──────────────────────────────────┘
-```
+`
+>>> 今天北京的天气怎么样？
+  🌤️ 正在查询 北京 天气...
 
-### 基础对话
+➜ 帮我搜索一下最新的 AI 新闻
+  🔳 搜索: 最新 AI 新闻
+`
 
-1. 在顶部下拉框中选择 **厂商**（如 DeepSeek、OpenAI）
-2. 选择 **模型**（如 deepseek-chat、gpt-4o）
-3. 在输入框中输入消息，按 **Enter** 发送
-4. 回复会实时流式输出，像打字机一样逐字出现
+#### 内置命令
 
-### 联网搜索
+| 命令 | 说明 |
+|------|------|
+| /search <关键词> | 搜索 Skill 市场 |
+| /skills | 查看已安装的 Skill |
+| install <编号> | 安装指定编号的 Skill |
+| exit or quit | 退出 |
 
-1. 点击左侧栏底部的 **工具/Skill** 按钮
-2. 切换到 **工具** 页签
-3. 在搜索框中输入关键词，点击"搜索"
-4. 搜索结果会以卡片形式展示
-5. 你也可以在对话中让 AI 直接帮你搜索
+#### Skill 自动发现安装
 
-### 安装和使用 Skill
+当 Agent 遇到不会做的事情时，会自动搜索 Skill 市场并推荐安装：
 
-1. 点击 **工具/Skill** → 切换到 **安装** 页签
-2. 浏览精选 Skill 列表：
-   - **联网搜索** — 搜索互联网获取实时信息
-   - **代码审查** — 审查 Python 代码质量
-   - **内容总结** — 智能总结文本内容
-   - **文件整理** — 自动分类和组织文件
-3. 点击 **安装** 按钮
-4. 安装完成后，切换到 **Skills** 页签查看已安装的 Skill
-5. 在对话中描述你的任务，AI 会自动调用已安装的 Skill
+`
+>>> 帮我把这张图片变成黑白
 
-### 配置设置
+🔍 找到了一个图片处理的 Skill：
+1. 🧩 image_processor
+   简介：图片滤镜、黑白转换、尺寸调整等
 
-点击左侧栏底部的 **设置** 按钮：
+想安装哪一个？直接回复编号就行
+>>> 装第1个
+✅ 安装成功！现在我来帮你处理图片...
+`
 
-| 配置项 | 说明 |
-|--------|------|
-| API 密钥 | 配置各厂商的 API Key，输入后自动保存 |
-| 温度 | 控制回复的随机性（0.0 - 2.0），数字越小越确定 |
-| 最大 Token | 控制回复的最大长度 |
-| 系统提示词 | 自定义系统提示词，让 AI 扮演特定角色 |
+### Web UI 使用
 
-> API Key 仅保存在本地 `.openagent/config.json` 文件中，不会被上传或泄漏。
+访问 http://127.0.0.1:8080 后：
 
-### 命令行模式
-
-除了 Web UI，也支持命令行交互：
-
-```bash
-python examples/run_agent.py
-```
-
-查看完整功能演示：
-
-```bash
-python examples/basic_agent.py
-```
-
----
-
-## 支持的厂商
-
-| 厂商 | 环境变量 | 默认模型 |
-|------|---------|---------|
-| OpenAI | `OPENAI_API_KEY` | gpt-4o |
-| DeepSeek | `DEEPSEEK_API_KEY` | deepseek-chat |
-| 通义千问 | `QWEN_API_KEY` | qwen-plus |
-| 智谱 GLM | `ZHIPU_API_KEY` | glm-4-flash |
-| Moonshot Kimi | `MOONSHOT_API_KEY` | moonshot-v1-8k |
-| Anthropic Claude | `ANTHROPIC_API_KEY` | claude-3-5-sonnet |
-| Google Gemini | `GOOGLE_API_KEY` | gemini-2.0-flash |
-| 豆包 | `DOUBAO_API_KEY` | doubao-pro-32k |
-
----
+1. 点击左上角设置图标，选择 LLM 厂商和模型
+2. 输入 API Key（或通过环境变量配置）
+3. 在聊天框输入问题
+4. Agent 会自动联网搜索、安装 Skill 来帮你解决问题
 
 ## 项目结构
 
-```
+`
 agent-framework/
-├── web_ui/                    # Web 图形界面
-│   ├── main.py                # FastAPI 后端服务
-│   └── static/                # 前端资源
-│       ├── index.html         # 主页面
-│       ├── styles.css         # 暗色主题样式
-│       └── app.js             # 前端交互逻辑
-├── agent_framework/           # 核心 Python 库
-│   ├── agent.py               # Agent 编排器
-│   ├── config.py              # 配置管理
-│   ├── core/                  # 基础接口和类型定义
-│   ├── llm/                   # 多厂商 LLM 客户端
-│   ├── tools/                 # 内置工具（文件、Shell）
-│   ├── memory/                # 记忆系统与检索
-│   ├── planner/               # 任务规划与分解
-│   ├── workflow/              # 工作流引擎
-│   ├── sandbox/               # Docker 沙箱与安全策略
-│   └── skills/                # Skill 加载与管理
-├── examples/                  # 使用示例
-│   ├── run_agent.py           # 命令行交互式 Agent
-│   ├── run_webui.py           # Web UI 启动脚本
-│   └── basic_agent.py         # 完整功能演示
-├── tests/                     # 测试用例
-├── docker/                    # Docker 沙箱镜像
-└── pyproject.toml             # Python 包配置
-```
+├── agent_framework/        # 核心框架
+│   ├── core/               # 接口定义和类型
+│   ├── llm/                # 多厂商 LLM 抽象层
+│   ├── tools/              # 工具系统（内置 + 联网工具）
+│   ├── skills/             # Skill 自动发现与安装
+│   ├── planner/            # 规划引擎
+│   ├── memory/             # 记忆后端
+│   ├── context/            # 上下文管理
+│   ├── workflow/           # 工作流引擎
+│   ├── sandbox/            # 沙箱执行环境
+│   └── web/                # 联网搜索工具
+├── web_ui/                 # Web 用户界面
+├── docker/                 # Docker 沙箱配置
+├── examples/               # 使用示例
+├── tests/                  # 测试用例
+└── docs/                   # 文档
+`
 
----
+## 开发指南
 
-## 常见问题
+`ash
+# 安装开发依赖
+pip install "agent-framework[dev]"
 
-**问：端口 8080 被占用了怎么办？**
-```bash
-# 修改 web_ui/main.py 最后一行的端口号，或杀掉占用进程
-# 也可以指定其他端口启动
-```
+# 运行测试
+pytest
 
-**问：API 返回 401 未授权？**
-检查 API Key 是否正确配置。也可以在 Web UI 的**设置**面板中直接输入密钥。
+# 运行测试（含异步测试）
+pytest --asyncio-mode=auto
+`
 
-**问：联网搜索没有结果？**
-DuckDuckGo 可能限制了部分 IP 的请求。可以换一个搜索词，或者换一个网络环境尝试。
+## 扩展框架
 
-**问：提示找不到模块？**
-确保所有依赖已安装：
-```bash
-pip install httpx fastapi uvicorn websockets
-```
+### 添加自定义工具
 
-**问：配置文件在哪里？**
-配置文件在项目根目录的 `.openagent/` 文件夹下，已加入 `.gitignore`，不会提交到 Git。
+`python
+from agent_framework.core.interfaces import BaseTool
+from agent_framework.core.types import ExecutionContext, ToolResult
 
----
+class MyTool(BaseTool):
+    name = "my_tool"
+    description = "描述你的工具"
+    parameters = {
+        "type": "object",
+        "properties": {
+            "input": {"type": "string", "description": "输入参数"},
+        },
+        "required": ["input"],
+    }
 
-## 开发路线
+    async def execute(self, ctx: ExecutionContext, **kwargs) -> ToolResult:
+        input_val = kwargs.get("input", "")
+        # 你的工具逻辑
+        return ToolResult.ok(f"处理结果: {input_val}")
 
-- [ ] 插件系统
-- [ ] 文件上传与预览
-- [ ] 代码解释器沙箱
-- [ ] 自定义 Skill 编辑器
-- [ ] 多用户支持
-- [ ] 移动端适配
+# 注册到工具注册表
+tool_registry.register(MyTool())
+`
 
----
-
-## 许可证
+## License
 
 MIT

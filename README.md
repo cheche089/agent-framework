@@ -1,221 +1,165 @@
-﻿# OpenAgent
+﻿# OpenAgent — Modular AI Agent Framework
 
-![Python](https://img.shields.io/badge/python-3.10+-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.104-009688)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)]()
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)]()
 
-**OpenAgent** is a modular AI Agent framework with an intuitive Web UI, supporting 10+ LLM providers. It features built-in tools, a skill management system, web search, and a desktop-grade user interface — all in a single Python application.
-
-Supports both command-line and web-based interaction. Two different launch methods are available below.
-
-This is a basic agent framework with almost no built-in skills. You can download and configure your own skills as needed.
-
-Locally deployed AI agent.
-
----
+**OpenAgent** is a modular, production-ready AI Agent framework. It provides a full toolkit to build, extend, and run intelligent agents locally — with internet search, skill auto-discovery, multi-provider LLM support, and a beautiful Web UI.
 
 ## Features
 
-| Feature | Description |
-|---------|-------------|
-| **Multi-Provider** | OpenAI, DeepSeek, Qwen, Zhipu GLM, Moonshot Kimi, Anthropic Claude, Google Gemini, ByteDance Doubao |
-| **Streaming Chat** | Real-time streaming responses via WebSocket |
-| **Web Search** | Built-in DuckDuckGo search, no API key required |
-| **Skill System** | Curated skills marketplace — install, uninstall, and execute skills |
-| **Conversation Management** | Save, browse, and restore chat history |
-| **Tools & Agents** | File read/write, shell execution, web search |
-| **Dark Theme UI** | Codex-like desktop interface |
-| **Docker Sandbox** | Isolated command execution via Docker containers |
-| **Workflow Engine** | Sequence, condition, loop, and parallel workflows |
-| **Memory System** | TF-IDF semantic retrieval + LLM-based summarization |
+- **Modular Architecture** — Tools, Planner, Memory, Context, Workflow, Skills, Sandbox — all pluggable interfaces
+- **Internet Search** — Built-in web search with automatic weather detection and GitHub raw content conversion
+- **Multi-Provider LLM** — Supports OpenAI, DeepSeek, Anthropic Claude, Google Gemini, Alibaba Qwen, Zhipu GLM, Moonshot Kimi, Baidu ERNIE, ByteDance Doubao, Lingyi Wanwu (Yi)
+- **Skill System** — Auto-discover, search, and install one-click skill packs from the community marketplace
+- **Web UI** — Codex-style chat interface with streaming output, conversation management, and multi-model switching
+- **Agent Loop Engine** — Thought → Action → Observation loop with auto-retry, replanning, and human intervention
+- **Harness Engine** — Safety guardrails, feedback loops, tool call management, and execution metrics
+- **Docker Sandbox** — Isolated command execution environment
+- **Long-Running Tasks** — Checkpoint support for resumable long-running tasks
+- **Workflow Engine** — Graph-based workflow orchestration
 
----
-
-## Quick Start (3 minutes)
+## Quick Start
 
 ### 1. Prerequisites
 
 - Python 3.10+
-- pip
+- An API key from any supported LLM provider
 
-### 2. Install
+### 2. Setup
 
-```bash
+`ash
+# Clone the repo
 git clone https://github.com/cheche089/agent-framework.git
 cd agent-framework
 
+# (Optional) Create virtual environment
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
+
 # Install dependencies
-pip install httpx fastapi uvicorn websockets
-```
+pip install httpx>=0.27
+`
 
-### 3. Set API Key
+### 3. Configure API Key
 
-Choose at least one provider:
+Set your LLM provider's API key as an environment variable:
 
-```bash
-# OpenAI
-export OPENAI_API_KEY="sk-xxx"
+| Provider   | Env Variable        | Default Model        |
+|------------|---------------------|----------------------|
+| OpenAI     | OPENAI_API_KEY    | gpt-4o               |
+| DeepSeek   | DEEPSEEK_API_KEY  | deepseek-chat        |
+| Anthropic  | ANTHROPIC_API_KEY | claude-3-5-sonnet    |
+| Google     | GOOGLE_API_KEY    | gemini-2.0-flash     |
+| Alibaba Qwen | QWEN_API_KEY    | qwen-plus            |
+| Zhipu GLM  | ZHIPU_API_KEY     | glm-4-flash          |
+| Moonshot Kimi | MOONSHOT_API_KEY | moonshot-v1-8k    |
+| Baidu ERNIE | ERNIE_API_KEY    | ernie-4.0            |
+| Doubao     | DOUBAO_API_KEY    | doubao-pro-32k       |
+| Yi (01.AI) | YI_API_KEY        | yi-lightning         |
 
-# DeepSeek
-export DEEPSEEK_API_KEY="sk-xxx"
+**Windows (CMD):**
+`cmd
+set OPENAI_API_KEY=sk-your-key-here
+`
 
-# Qwen (Tongyi Qianwen)
-export QWEN_API_KEY="sk-xxx"
+**Windows (PowerShell):**
+`powershell
+="sk-your-key-here"
+`
 
-# Anthropic Claude
-export ANTHROPIC_API_KEY="sk-xxx"
-```
+**macOS / Linux:**
+`ash
+export OPENAI_API_KEY="sk-your-key-here"
+`
 
-**Windows PowerShell:**
-```powershell
-$env:OPENAI_API_KEY = "sk-xxx"
-$env:DEEPSEEK_API_KEY = "sk-xxx"
-```
+### 4. Run
 
-### 4. Start Web UI
+#### Interactive CLI
 
-```bash
-cd agent-framework
-python web_ui/main.py
-```
-
-Open **http://127.0.0.1:8080** in your browser.
-
----
-
-## Screenshots
-
-![OpenAgent Web UI](docs/screenshot.png)
-
-*Coming soon. The UI features a dark theme with a sidebar for conversations, a chat area with streaming responses, and a settings panel for API key configuration.*
-
----
-
-## Usage Guide
-
-### Chat Interface
-
-1. Select a **provider** (e.g., OpenAI, DeepSeek) from the dropdown.
-2. Select a **model** (e.g., gpt-4o, deepseek-chat).
-3. Type your message in the input box and press **Enter**.
-4. Responses stream in real-time.
-
-### Tools & Skills Panel
-
-Click **Tools/Skills** in the sidebar:
-
-- **Tools tab**: View built-in tools and use the **web search** bar.
-- **Skills tab**: View installed skills.
-- **Install tab**: Browse curated skills and click **Install** to add them.
-
-To use a skill in chat, describe your task — the LLM will automatically invoke the relevant tools.
-
-### Settings
-
-Click **Settings** in the sidebar to configure:
-
-| Setting | Description |
-|---------|-------------|
-| API Keys | Store provider API keys (saved locally, never uploaded) |
-| Temperature | Response randomness (0.0 - 2.0) |
-| Max Tokens | Maximum response length |
-| System Prompt | Custom system prompt for the LLM |
-
-### CLI Mode
-
-For command-line interaction:
-
-```bash
+`ash
 python examples/run_agent.py
-```
+`
 
-For a full feature demo:
+#### Web UI (Codex-style interface)
 
-```bash
-python examples/basic_agent.py
-```
+`ash
+# Option A: Double-click start_webui.bat (Windows)
+# Option B:
+python examples/run_webui.py
+`
 
----
+Then open your browser at **http://127.0.0.1:8080**
 
-## Supported Providers
+## Usage Examples
 
-| Provider | Env Variable | Default Model |
-|----------|-------------|---------------|
-| OpenAI | `OPENAI_API_KEY` | gpt-4o |
-| DeepSeek | `DEEPSEEK_API_KEY` | deepseek-chat |
-| Qwen (Tongyi) | `QWEN_API_KEY` | qwen-plus |
-| Zhipu GLM | `ZHIPU_API_KEY` | glm-4-flash |
-| Moonshot Kimi | `MOONSHOT_API_KEY` | moonshot-v1-8k |
-| Anthropic Claude | `ANTHROPIC_API_KEY` | claude-3-5-sonnet |
-| Google Gemini | `GOOGLE_API_KEY` | gemini-2.0-flash |
-| Doubao | `DOUBAO_API_KEY` | doubao-pro-32k |
+### Basic Agent
 
----
+`python
+import asyncio
+from agent_framework import Agent, AgentConfig
+
+async def main():
+    agent = Agent(
+        tool_registry=...,
+        planner=...,
+        memory=...,
+        context_mgr=...,
+        workflow_engine=...,
+        skill_mgr=...,
+        sandbox=...,
+        config=AgentConfig.default(),
+    )
+    result = await agent.run("Search the latest AI news")
+    print(result)
+
+asyncio.run(main())
+`
+
+### Interactive Chat
+
+`ash
+python examples/run_agent.py
+`
+
+In the interactive mode:
+- Type any question — the agent will search the web if needed
+- /search <keyword> — Search the skill marketplace
+- /skills — List installed skills
+- install <number> — Install a skill by number
+- exit — Quit
 
 ## Project Structure
 
-```
+`
 agent-framework/
-├── web_ui/                    # Web UI (FastAPI + Static files)
-│   ├── main.py                # Backend server
-│   └── static/                # Frontend assets
-│       ├── index.html         # Main page
-│       ├── styles.css         # Dark theme styles
-│       └── app.js             # UI logic
-├── agent_framework/           # Core Python library
-│   ├── agent.py               # Agent orchestrator
-│   ├── config.py              # Configuration
-│   ├── core/                  # Base interfaces & types
-│   ├── llm/                   # Multi-provider LLM client
-│   ├── tools/                 # Built-in tools (file, shell)
-│   ├── memory/                # Memory & retrieval
-│   ├── planner/               # Task planning & decomposition
-│   ├── workflow/              # Workflow engine
-│   ├── sandbox/               # Docker sandbox & security
-│   └── skills/                # Skill loader & manager
-├── examples/                  # Usage examples
-│   ├── run_agent.py           # Interactive CLI agent
-│   ├── run_webui.py           # Web UI launcher
-│   └── basic_agent.py         # Full feature demo
-├── tests/                     # Test suite
-├── docker/                    # Docker sandbox image
-└── pyproject.toml             # Python package config
-```
+├── agent_framework/        # Core framework
+│   ├── core/               # Interfaces & types
+│   ├── llm/                # Multi-provider LLM abstraction
+│   ├── tools/              # Tool system (built-in + web tools)
+│   ├── skills/             # Skill auto-discovery & installer
+│   ├── planner/            # Planning engine
+│   ├── memory/             # Memory backends
+│   ├── context/            # Context management
+│   ├── workflow/           # Workflow engine
+│   ├── sandbox/            # Sandbox execution
+│   └── web/                # Web search utilities
+├── web_ui/                 # Web UI (FastAPI + static files)
+├── docker/                 # Docker sandbox config
+├── examples/               # Example scripts
+├── tests/                  # Test suite
+└── docs/                   # Documentation
+`
 
----
+## Development
 
-## Troubleshooting
+`ash
+# Install dev dependencies
+pip install "agent-framework[dev]"
 
-**Q: Port 8080 is already in use.**
-```bash
-# Use a different port
-python web_ui/main.py  # Edit the port in main.py or kill the existing process
-```
-
-**Q: API returns 401 Unauthorized.**
-Check that your API key is correctly set. You can also configure keys via the **Settings** panel in the UI.
-
-**Q: Web search returns no results.**
-DuckDuckGo may block requests from certain IPs. Try a different query or run the app in a different network environment.
-
-**Q: Module not found errors.**
-Ensure all dependencies are installed:
-```bash
-pip install httpx fastapi uvicorn websockets
-```
-
----
-
-## Roadmap
-
-- [ ] Plugin system
-- [ ] File upload & preview in chat
-- [ ] Code interpreter sandbox
-- [ ] Custom skill authoring
-- [ ] Multi-user support
-- [ ] Mobile-responsive UI
-
----
+# Run tests
+pytest
+`
 
 ## License
 

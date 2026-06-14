@@ -96,9 +96,10 @@ class DockerSandbox(Sandbox):
             # 镜像和命令
             docker_cmd.append(self._image)
 
-            # 在容器内执行命令
-            shell_cmd = command.replace('"', '\\"')
-            docker_cmd.extend(["/bin/sh", "-c", shell_cmd])
+            # 在容器内执行命令 - 使用 shlex.quote 避免注入
+            import shlex
+            safe_cmd = " ".join(shlex.quote(c) for c in shlex.split(command))
+            docker_cmd.extend(["/bin/sh", "-c", safe_cmd])
 
             proc = await asyncio.create_subprocess_exec(
                 *docker_cmd,
@@ -167,9 +168,11 @@ class DockerSandbox(Sandbox):
         if not allowed:
             raise PermissionError(f"策略拒绝: {reason}")
 
-        # 将内容通过 stdin 传入
-        escaped = content.replace("'", "'\\''")
-        cmd = f"mkdir -p $(dirname {path}) && cat > {path} << 'SANDBOX_EOF'\n{content}\nSANDBOX_EOF"
+        import shlex, base64
+        # 安全方式：通过 base64 编码传输内容，避免 shell 转义问题
+        encoded = base64.b64encode(content.encode("utf-8")).decode("ascii")
+        safe_path = shlex.quote(path)
+        cmd = f"mkdir -p $(dirname {safe_path}) && echo '{encoded}' | base64 -d > {safe_path}"
         result = await self.execute_command(cmd)
         if not result.success:
             raise IOError(f"写入文件失败: {result.error}")

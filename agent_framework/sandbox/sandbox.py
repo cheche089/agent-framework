@@ -3,6 +3,7 @@
 from __future__ import annotations
 import asyncio
 import os
+import shlex
 import subprocess
 import time
 from typing import Optional
@@ -25,12 +26,17 @@ class LocalSandbox(Sandbox):
 
         start = time.time()
         try:
+            # Use shlex.split + run with list args to avoid shell injection
+            cmd_parts = shlex.split(command)
+            if not cmd_parts:
+                return SandboxResult(success=False, error="Empty command", exit_code=-1)
+
             proc = await asyncio.get_event_loop().run_in_executor(
                 None,
                 lambda: subprocess.run(
-                    command,
+                    cmd_parts,
                     capture_output=True,
-                    shell=True,
+                    shell=False,  # No shell to prevent injection
                     cwd=self._workdir,
                     timeout=timeout,
                 )
@@ -64,4 +70,4 @@ class LocalSandbox(Sandbox):
             f.write(content)
 
     async def set_mode(self, mode: SandboxMode) -> None:
-        self._mode = mode
+        self._mode = mode
