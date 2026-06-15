@@ -43,30 +43,7 @@ pip install httpx fastapi uvicorn websockets
 
 ### 2. Set API Key
 
-Choose at least one LLM provider:
-
-**Linux / macOS:**
-```bash
-# DeepSeek (recommended, best value)
-export DEEPSEEK_API_KEY="sk-your-key"
-
-# OpenAI
-export OPENAI_API_KEY="sk-your-key"
-
-# Alibaba Qwen (free tier available)
-export QWEN_API_KEY="sk-your-key"
-
-# Anthropic Claude
-export ANTHROPIC_API_KEY="sk-your-key"
-```
-
-**Windows PowerShell:**
-```powershell
-$env:DEEPSEEK_API_KEY = "sk-your-key"
-$env:OPENAI_API_KEY = "sk-your-key"
-```
-
-> 💡 You can also input API keys directly in the Web UI settings panel — they will be saved locally to `.openagent/config.json`.
+After starting the application, you can configure it in the Web interface settings as shown below.
 
 ### 3. Launch
 
