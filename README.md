@@ -43,7 +43,7 @@ pip install httpx fastapi uvicorn websockets
 
 ### 2. Set API Key
 
-After starting the application, you can configure it in the Web interface settings as shown below.
+After startup, simply configure it in the Web UI settings as shown below.
 
 ### 3. Launch
 
