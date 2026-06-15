@@ -50,12 +50,6 @@ python web_ui/main.py
 # Open http://127.0.0.1:8080
 ```
 
-**CLI mode:**
-```bash
-cd agent-framework
-python examples/run_agent.py
-```
-
 ### 3. Set API Key
 
 After startup, simply configure it in the Web UI settings as shown below.
