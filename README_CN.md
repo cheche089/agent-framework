@@ -47,28 +47,8 @@ pip install httpx fastapi uvicorn websockets
 
 ### 2. 配置 API Key（至少配置一个）
 
-**Linux / macOS:**
-```bash
-# DeepSeek（推荐，性价比最高）
-export DEEPSEEK_API_KEY="sk-你的key"
+在如下的启动后web界面设置里面配置即可
 
-# OpenAI
-export OPENAI_API_KEY="sk-你的key"
-
-# 通义千问（阿里云，白嫖党首选）
-export QWEN_API_KEY="sk-你的key"
-
-# Anthropic Claude
-export ANTHROPIC_API_KEY="sk-你的key"
-```
-
-**Windows PowerShell:**
-```powershell
-$env:DEEPSEEK_API_KEY = "sk-你的key"
-$env:OPENAI_API_KEY = "sk-你的key"
-```
-
-> 💡 也可以在 Web UI 的设置面板中直接输入 API Key，会自动保存到本地 `.openagent/config.json` 文件，不会上传。
 
 ### 3. 启动
 
