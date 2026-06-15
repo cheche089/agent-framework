@@ -61,7 +61,6 @@ python examples/run_agent.py
 After startup, simply configure it in the Web UI settings as shown below.
 <img width="1203" height="847" alt="image" src="https://github.com/user-attachments/assets/5773ba68-dfcd-4985-a44f-1ff11261dd62" />
 
-**Windows users:** Double-click `start_webui.bat` to launch instantly.
 
 ---
 
