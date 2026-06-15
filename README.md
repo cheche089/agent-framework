@@ -41,13 +41,7 @@ cd agent-framework
 pip install httpx fastapi uvicorn websockets
 ```
 
-### 2. Set API Key
-
-After startup, simply configure it in the Web UI settings as shown below.
-<img width="1203" height="847" alt="image" src="https://github.com/user-attachments/assets/5773ba68-dfcd-4985-a44f-1ff11261dd62" />
-
-
-### 3. Launch
+### 2. Launch
 
 **Web UI (recommended):**
 ```bash
@@ -61,6 +55,11 @@ python web_ui/main.py
 cd agent-framework
 python examples/run_agent.py
 ```
+
+### 3. Set API Key
+
+After startup, simply configure it in the Web UI settings as shown below.
+<img width="1203" height="847" alt="image" src="https://github.com/user-attachments/assets/5773ba68-dfcd-4985-a44f-1ff11261dd62" />
 
 **Windows users:** Double-click `start_webui.bat` to launch instantly.
 
