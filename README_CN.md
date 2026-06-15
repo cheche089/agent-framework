@@ -64,6 +64,7 @@ python examples/run_agent.py
 ### 3.配置 API Key（至少配置一个）
 
 在如下的启动后web界面设置里面配置即可
+<img width="1143" height="767" alt="image" src="https://github.com/user-attachments/assets/9ca1d101-9856-4d70-a601-cca2e716784a" />
 
 ---
 
