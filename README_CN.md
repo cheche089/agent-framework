@@ -55,11 +55,6 @@ python web_ui/main.py
 # 浏览器打开 http://127.0.0.1:8080
 ```
 
-**CLI 命令行模式：**
-```bash
-cd agent-framework
-python examples/run_agent.py
-```
 
 ### 3.配置 API Key（至少配置一个）
 
